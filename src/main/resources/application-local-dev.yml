@@ -1,0 +1,10 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: none # don't have JPA auto-configure in-memory schema, use our schema.sql
+
+application:
+  fileStorage: local_hard_drive_tmp
