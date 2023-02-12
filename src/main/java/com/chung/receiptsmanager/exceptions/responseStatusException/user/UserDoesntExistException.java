@@ -1,4 +1,4 @@
-package com.chung.receiptsmanager.exceptions.responseStatusException;
+package com.chung.receiptsmanager.exceptions.responseStatusException.user;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;

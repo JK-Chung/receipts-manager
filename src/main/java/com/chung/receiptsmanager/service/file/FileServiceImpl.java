@@ -2,6 +2,8 @@ package com.chung.receiptsmanager.service.file;
 
 import com.chung.receiptsmanager.entity.FileEntity;
 import com.chung.receiptsmanager.entity.UserEntity;
+import com.chung.receiptsmanager.exceptions.responseStatusException.file.ActualFileTypeDoesNotMatchFileExtensionException;
+import com.chung.receiptsmanager.exceptions.responseStatusException.file.UnacceptableFileTypeException;
 import com.chung.receiptsmanager.repository.file.FileRepository;
 import com.chung.receiptsmanager.service.security.CurrentAuthenticationService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,32 +19,46 @@ public class FileServiceImpl implements FileService {
 
     private final FileRepository fileRepository;
     private final FileStorageService fileStorageService;
+    private final FileValidationService fileValidationService;
     private final CurrentAuthenticationService currentAuthenticationService;
 
-    public FileServiceImpl(FileRepository fileRepository, FileStorageService fileStorageService,
-                       CurrentAuthenticationService currentAuthenticationService) {
+    public FileServiceImpl(
+            FileRepository fileRepository,
+            FileStorageService fileStorageService,
+            FileValidationService fileValidationService,
+            CurrentAuthenticationService currentAuthenticationService
+    ) {
         this.fileRepository = fileRepository;
         this.fileStorageService = fileStorageService;
+        this.fileValidationService = fileValidationService;
         this.currentAuthenticationService = currentAuthenticationService;
     }
 
     @Override
     public UUID saveFileAndMetadata(final Path toSave) throws IOException {
-        final UUID id = UUID.randomUUID();
-        log.info("Saving new file with id {}...", id);
-
-        // TODO sanitise and ensure file is safe
         final String fileLocation = fileStorageService.storeFile(toSave);
-        log.info("New file (id={}) was saved in file-location {}", id, fileLocation);
+        this.fileValidationService.validateFile(toSave, () -> cleanupStoredFile(fileLocation)); // TODO consider validating file before storing it
 
+        final UUID id = UUID.randomUUID();
+        log.info("File (id={}, file-location={}) was successfully stored and validated. Now persiting metadata...",
+                id, fileLocation);
+        persistFileMetadata(toSave, id, fileLocation, () -> cleanupStoredFile(fileLocation));
+        return id;
+    }
+
+    private void persistFileMetadata(
+            final Path file,
+            final UUID id,
+            final String fileLocation,
+            final Runnable cleanupOnFailure
+    ) {
         try {
-            persistFileMetadata(toSave, id, fileLocation);
-            return id;
-        } catch (Exception persistFileMetadataException) {
+            persistFileMetadata(file, id, fileLocation);
+        } catch (Exception ex) {
             log.error("Exception when trying to persist metadata on saved file (id={}, file-location={}). " +
-                    "Will try to delete stored file for cleanup.", id, fileLocation, persistFileMetadataException);
-            cleanupStoredFile(fileLocation);
-            throw persistFileMetadataException;
+                    "Will run cleanup function {}.", id, fileLocation, cleanupOnFailure.toString(), ex);
+            cleanupOnFailure.run();
+            throw ex;
         }
     }
 

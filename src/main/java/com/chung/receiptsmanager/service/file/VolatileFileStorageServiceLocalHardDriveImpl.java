@@ -20,14 +20,14 @@ import java.util.UUID;
 @Slf4j
 @Service
 @ConditionalOnProperty(prefix = "application", name = "fileStorage", havingValue = "local_hard_drive_tmp")
-public class FileStorageServiceVolatileLocalHardDriveImpl implements FileStorageService {
+public class VolatileFileStorageServiceLocalHardDriveImpl implements FileStorageService {
 
     private static final String STORAGE_DIRECTORY_NAME_PREFIX = "receipts-mananger-volatile-file-storage-";
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
 
     private final Path storageDirectory;
 
-    public FileStorageServiceVolatileLocalHardDriveImpl() throws IOException {
+    public VolatileFileStorageServiceLocalHardDriveImpl() throws IOException {
         this.storageDirectory = Files.createTempDirectory(STORAGE_DIRECTORY_NAME_PREFIX);
     }
 
@@ -38,12 +38,12 @@ public class FileStorageServiceVolatileLocalHardDriveImpl implements FileStorage
         final Path destFilePath = getPathFromFileLocation(fileLocation);
 
         try {
-            log.info("Saving file (file location = {}) to path {}...", fileLocation, destFilePath);
+            log.info("Saving file (file-location = {}) to path {}...", fileLocation, destFilePath);
             Files.copy(sourceFilePath, destFilePath);
-            log.info("Successfully saved file (file location = {}) to path {}...", fileLocation, destFilePath);
+            log.info("Successfully saved file (file-location = {}) to path {}...", fileLocation, destFilePath);
             return fileLocation;
         } catch (FileAlreadyExistsException ex) {
-            log.error("Was unable to save new file (file location = {}) because a file already exists at {}",
+            log.error("Was unable to save new file (file-location = {}) because a file already exists at {}",
                     fileLocation, destFilePath);
             throw ex;
         }
@@ -54,17 +54,17 @@ public class FileStorageServiceVolatileLocalHardDriveImpl implements FileStorage
         final Path path = getPathFromFileLocation(fileLocation);
 
         if(!Files.exists(path)) {
-            log.debug("No file exists (file location = {}, path = {})", fileLocation, path);
+            log.debug("No file exists (file-location = {}, path = {})", fileLocation, path);
             return Optional.empty();
         }
 
         if(!Files.isRegularFile(path)) {
-            log.warn("File (file location = {}, path = {}) is somehow a directory? " +
+            log.warn("File (file-location = {}, path = {}) is somehow a directory? " +
                     "Application will act as if nothing exists at this path.", fileLocation, path);
             return Optional.empty();
         }
 
-        log.debug("Successfully located file (file location = {}, path = {})", fileLocation, path);
+        log.debug("Successfully located file (file-location = {}, path = {})", fileLocation, path);
         return Optional.of(path);
     }
 

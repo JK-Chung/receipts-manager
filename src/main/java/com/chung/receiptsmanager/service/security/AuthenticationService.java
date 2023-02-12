@@ -3,7 +3,7 @@ package com.chung.receiptsmanager.service.security;
 import com.chung.receiptsmanager.dto.CreateUserDto;
 import com.chung.receiptsmanager.dto.UserDto;
 import com.chung.receiptsmanager.entity.UserEntity;
-import com.chung.receiptsmanager.exceptions.responseStatusException.UserAlreadyExistsException;
+import com.chung.receiptsmanager.exceptions.responseStatusException.user.UserAlreadyExistsException;
 import com.chung.receiptsmanager.repository.user.UserRepository;
 import com.chung.receiptsmanager.security.UserSecurity;
 import lombok.extern.slf4j.Slf4j;
