@@ -64,9 +64,7 @@ public class FileValidationService {
     }
 
     private void verifyActualFileTypeAcceptable(final Path file) throws UnacceptableFileTypeException, IOException {
-        if(file.toFile().isDirectory()) {
-            throw new IllegalArgumentException(file + " is a directory, not a file");
-        }
+        assert file.toFile().isFile() : file + " is not a file";
 
         final MediaType actualFileType = analyseFileType(file);
         final boolean isActualFileTypeUnacceptable = !this.ALLOWLISTED_FILE_TYPES.contains(actualFileType);
@@ -78,9 +76,7 @@ public class FileValidationService {
 
     private void verifyFileExtensionMatchActualFileType(final Path file)
             throws ActualFileTypeDoesNotMatchFileExtensionException, IOException {
-        if(file.toFile().isDirectory()) {
-            throw new IllegalArgumentException(file + " is a directory, not a file");
-        }
+        assert file.toFile().isFile() : file + " is not a file";
 
         if(!hasFileExtension(file)) {
             throw new IllegalArgumentException(file + " does not have a file extension");
@@ -103,9 +99,7 @@ public class FileValidationService {
     }
 
     private void verifyFilenameSafe(final Path file) {
-        if(file.toFile().isDirectory()) {
-            throw new IllegalArgumentException(file + " is a directory, not a file");
-        }
+        assert file.toFile().isFile() : file + " is not a file";
 
         final String filename = file.getFileName().toString();
         if(!isFilenameSafe(filename)) {
@@ -126,9 +120,7 @@ public class FileValidationService {
     }
 
     private MediaType analyseFileType(final Path file) throws IOException {
-        if(file.toFile().isDirectory()) {
-            throw new IllegalArgumentException(file + " is a directory, not a file");
-        }
+        assert file.toFile().isFile() : file + " is not a file";
 
         try(final var fileInputStream = new BufferedInputStream(new FileInputStream(file.toFile()))) {
             return new DefaultDetector()
