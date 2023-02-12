@@ -1,12 +1,12 @@
-package com.chung.receiptsmanager.service.file;
+package com.chung.receiptsmanager.service.file.helper;
 
+import com.chung.receiptsmanager.service.file.FileStorageService;
 import com.chung.receiptsmanager.utility.file.DeleteFilesVisitor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,24 +18,31 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
-@Service
-@ConditionalOnProperty(prefix = "application", name = "fileStorage", havingValue = "local_hard_drive_tmp")
-public class VolatileFileStorageServiceLocalHardDriveImpl implements FileStorageService {
+public class VolatileLocalFileStorage implements FileStorageService {
 
-    private static final String STORAGE_DIRECTORY_NAME_PREFIX = "receipts-mananger-volatile-file-storage-";
+    private static final String STORAGE_DIRECTORY_NAME_PREFIX = "receipts-manager-volatile-";
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd-HH-mm");
 
     private final Path storageDirectory;
 
-    public VolatileFileStorageServiceLocalHardDriveImpl() throws IOException {
-        this.storageDirectory = Files.createTempDirectory(STORAGE_DIRECTORY_NAME_PREFIX);
+    public VolatileLocalFileStorage(final String forFilename) throws IOException {
+        this.storageDirectory = Files.createTempDirectory(STORAGE_DIRECTORY_NAME_PREFIX + forFilename + "-");
+        log.info("Storage directory created at " + this.storageDirectory.toString());
+    }
+
+    public Path tempStoreFileOnServer(final InputStream srcInputStream) throws IOException {
+        final String fileLocation = DATE_FORMAT.format(new Date()) + "--" + UUID.randomUUID();
+        final Path destFilePath = generatePathToStoreNewFile(fileLocation);
+
+        Files.copy(srcInputStream, destFilePath);
+        return destFilePath;
     }
 
     @Override
     public String storeFile(final Path sourceFilePath) throws IOException {
         // generate our own custom filename (for security, don't trust user-provided filenames)
         final String fileLocation = DATE_FORMAT.format(new Date()) + "--" + UUID.randomUUID();
-        final Path destFilePath = getPathFromFileLocation(fileLocation);
+        final Path destFilePath = generatePathToStoreNewFile(fileLocation);
 
         try {
             log.info("Saving file (file-location = {}) to path {}...", fileLocation, destFilePath);
@@ -51,7 +58,7 @@ public class VolatileFileStorageServiceLocalHardDriveImpl implements FileStorage
 
     @Override
     public Optional<Path> getFile(String fileLocation) throws IOException {
-        final Path path = getPathFromFileLocation(fileLocation);
+        final Path path = generatePathToStoreNewFile(fileLocation);
 
         if(!Files.exists(path)) {
             log.debug("No file exists (file-location = {}, path = {})", fileLocation, path);
@@ -70,17 +77,19 @@ public class VolatileFileStorageServiceLocalHardDriveImpl implements FileStorage
 
     @Override
     public void deleteFile(String fileLocation) throws IOException {
-        Files.delete(getPathFromFileLocation(fileLocation));
+        Files.delete(generatePathToStoreNewFile(fileLocation));
     }
 
-    private Path getPathFromFileLocation(final String fileLocation) {
+
+
+    private Path generatePathToStoreNewFile(final String fileLocation) {
         return Paths.get(this.storageDirectory.toString(), fileLocation);
     }
 
     @PreDestroy
     private void deleteStorageDirectory() {
         try {
-            log.info("Cleaning up files stored by {}...", this.getClass().getSimpleName());
+            log.info("Cleaning up files stored by {} in directory {}...", this.getClass().getSimpleName(), this.storageDirectory.toString());
             Files.walkFileTree(this.storageDirectory, new DeleteFilesVisitor());
         } catch (IOException ex) {
             log.error("Could not delete all files in directory (%s) due to exception"

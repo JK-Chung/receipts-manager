@@ -21,11 +21,8 @@ CREATE TABLE IF NOT EXISTS files (
     PK_id UUID NOT NULL PRIMARY KEY,
 
     FK_owner_id UUID NOT NULL,
-    FK_file_location_id UUID NOT NULL,
 
     user_provided_file_name NVARCHAR(120) NOT NULL,
-    file_extension NVARCHAR(24) NOT NULL CHECK(file_extension IN ('PNG')),
-
     file_location NVARCHAR(240) NOT NULL
 );
 

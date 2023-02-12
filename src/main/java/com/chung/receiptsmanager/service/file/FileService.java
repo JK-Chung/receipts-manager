@@ -1,9 +1,11 @@
 package com.chung.receiptsmanager.service.file;
 
+import com.chung.receiptsmanager.dto.FileDto;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.UUID;
 
 public interface FileService {
-    UUID saveFileAndMetadata(final Path toSave) throws IOException;
+    FileDto storeFileAndMetadata(final InputStream toStoreInputStream, final String userProvidedFilename) throws IOException;
 }

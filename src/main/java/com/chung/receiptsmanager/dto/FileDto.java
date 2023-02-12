@@ -6,23 +6,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class FileDto {
+
+    @NotNull
+    private UUID id;
 
     @NotBlank
-    private String username;
-
-    @NotBlank
-    private String firstName;
-
-    @NotBlank
-    private String lastName;
-
-    @NotBlank
-    private String emailAddress;
+    private String userProvidedFileName;
 
 }

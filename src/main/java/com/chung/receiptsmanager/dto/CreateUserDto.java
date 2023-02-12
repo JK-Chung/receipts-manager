@@ -22,8 +22,5 @@ public class CreateUserDto {
 
     @NotBlank
     private String emailAddress;
-    @NotBlank
-    private String city;
-
 
 }

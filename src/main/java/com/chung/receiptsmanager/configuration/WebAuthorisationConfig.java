@@ -28,6 +28,8 @@ public class WebAuthorisationConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/h2-console/**", "/api/auth/signup") // TODO remove h2-console when using big-boy DB
                 .permitAll()
+                .antMatchers("/api/image") // TODO remove
+                .permitAll()
                 .anyRequest().authenticated();
     }
 

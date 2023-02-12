@@ -15,7 +15,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "file")
+@Table(name = "files")
 public class FileEntity {
 
     @Id
@@ -32,14 +32,6 @@ public class FileEntity {
     private String userProvidedFileName;
 
     @NotBlank
-    @Enumerated(EnumType.STRING)
-    private FileExtension fileExtension;
-
-    @NotBlank
     private String fileLocation;
-
-    public enum FileExtension {
-        GIF, JPEG, PNG, PDF
-    }
 
 }
